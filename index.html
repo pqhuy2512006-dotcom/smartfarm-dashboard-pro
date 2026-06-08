@@ -1167,7 +1167,7 @@ body::after{
 
     <div class="control-grid">
       <div class="control-panel">
-        <h3>Điều khiển thủ công</h3>
+        <h3>Bật/tắt máy bơm</h3>
         <p>Bật hoặc tắt máy bơm trực tiếp</p>
         <div class="btn-row">
           <button class="btn btn-on" onclick="pumpOn()">🚿 BẬT TƯỚI</button>
@@ -1177,8 +1177,8 @@ body::after{
       </div>
 
       <div class="control-panel">
-        <h3>Điều khiển đèn</h3>
-        <p>Bật hoặc tắt đèn qua relay GPIO19.</p>
+        <h3>Bật/tắt đèn</h3>
+        <p>Bật hoặc tắt đèn.</p>
         <div class="btn-row">
           <button class="btn btn-auto" onclick="lightOn()">💡 BẬT ĐÈN</button>
           <button class="btn btn-auto-off" onclick="lightOff()">🌑 TẮT ĐÈN</button>
@@ -1187,7 +1187,7 @@ body::after{
       </div>
 
       <div class="control-panel">
-        <h3>☀️ Auto ánh sáng</h3>
+        <h3>☀️ Tự động bật/tắt đèn</h3>
         <p>Tự bật đèn khi ánh sáng thấp dưới ngưỡng.</p>
         <div class="btn-row">
           <button class="btn btn-auto" onclick="autoLightOn()">☀️ AUTO ON</button>
@@ -1197,7 +1197,7 @@ body::after{
       </div>
 
       <div class="control-panel">
-        <h3>Chế độ tự động</h3>
+        <h3>Tự động bật/tắt máy bơm</h3>
         <p>Thiết bị tự bật bơm khi cảm biến đất RAW vượt ngưỡng khô.</p>
         <div class="btn-row">
           <button class="btn btn-auto" onclick="autoOn()">🤖 AUTO ON</button>
@@ -1212,7 +1212,7 @@ body::after{
       <div class="chart-modal-head">
         <div>
           <h2 id="chartTitle">📈 Biểu đồ </h2>
-          <p>Dữ liệu lịch sử được lưu trên Firebase. Mở lại web vẫn xem được biểu đồ trong 60 phút gần nhất.</p>
+          <p>Dữ liệu.</p>
         </div>
         <button class="chart-close" onclick="closeChart()">×</button>
       </div>
@@ -1243,7 +1243,7 @@ body::after{
       </div>
 
       <div class="chart-actions">
-        <button class="btn btn-clear-chart" onclick="clearChartData()">XÓA LỊCH SỬ FIREBASE</button>
+        <button class="btn btn-clear-chart" onclick="clearChartData()">XÓA LỊCH SỬ</button>
         <button class="btn btn-ghost" onclick="closeChart()">ĐÓNG</button>
       </div>
     </div>
