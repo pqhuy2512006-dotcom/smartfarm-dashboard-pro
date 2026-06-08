@@ -1,0 +1,1877 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<title>HHP Smart Farm Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --bg-a:#020c07;
+  --bg-b:#062818;
+  --bg-c:#062d36;
+  --glass:rgba(255,255,255,.11);
+  --glass-strong:rgba(255,255,255,.17);
+  --line:rgba(255,255,255,.18);
+  --muted:rgba(255,255,255,.68);
+  --green:#00ff87;
+  --cyan:#60efff;
+  --blue:#2f80ff;
+  --orange:#ffb703;
+  --red:#ff4d6d;
+}
+
+*{
+  margin:0;
+  padding:0;
+  box-sizing:border-box;
+  font-family:'Segoe UI',Arial,sans-serif;
+}
+
+html{
+  scroll-behavior:smooth;
+}
+
+body{
+  min-height:100vh;
+  color:white;
+  overflow-x:hidden;
+  background:
+    radial-gradient(circle at 10% 8%, rgba(0,255,135,.26), transparent 28%),
+    radial-gradient(circle at 90% 10%, rgba(96,239,255,.22), transparent 28%),
+    radial-gradient(circle at 55% 100%, rgba(255,183,3,.12), transparent 36%),
+    linear-gradient(135deg,var(--bg-a),var(--bg-b),var(--bg-c));
+  padding:26px;
+}
+
+body::before{
+  content:"";
+  position:fixed;
+  inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.035) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.035) 1px, transparent 1px);
+  background-size:46px 46px;
+  pointer-events:none;
+  mask-image:linear-gradient(to bottom,black,transparent 88%);
+}
+
+body::after{
+  content:"";
+  position:fixed;
+  width:420px;
+  height:420px;
+  right:-160px;
+  bottom:-180px;
+  background:radial-gradient(circle,rgba(0,255,135,.23),transparent 65%);
+  pointer-events:none;
+}
+
+.container{
+  max-width:1320px;
+  margin:auto;
+  position:relative;
+  z-index:1;
+}
+
+.glass{
+  background:linear-gradient(145deg,var(--glass-strong),rgba(255,255,255,.055));
+  border:1px solid var(--line);
+  backdrop-filter:blur(20px);
+  box-shadow:0 22px 55px rgba(0,0,0,.36);
+}
+
+/* HERO */
+.hero{
+  display:grid;
+  grid-template-columns:1.35fr .75fr;
+  gap:22px;
+  margin-bottom:22px;
+}
+
+.hero-main{
+  position:relative;
+  overflow:hidden;
+  border-radius:34px;
+  padding:34px;
+}
+
+.hero-main::before{
+  content:"";
+  position:absolute;
+  width:260px;
+  height:260px;
+  right:-90px;
+  top:-90px;
+  border-radius:50%;
+  background:rgba(0,255,135,.16);
+}
+
+.hero-main::after{
+  content:"";
+  position:absolute;
+  width:150px;
+  height:150px;
+  right:90px;
+  bottom:-70px;
+  border-radius:50%;
+  background:rgba(96,239,255,.12);
+}
+
+.badge{
+  position:relative;
+  z-index:1;
+  display:inline-flex;
+  gap:9px;
+  align-items:center;
+  padding:9px 18px;
+  border-radius:999px;
+  background:rgba(0,255,135,.14);
+  border:1px solid rgba(0,255,135,.35);
+  color:#9dffd2;
+  font-weight:900;
+  letter-spacing:.2px;
+  margin-bottom:16px;
+}
+
+.hero-title{
+  position:relative;
+  z-index:1;
+  font-size:72px;
+  line-height:.9;
+  font-weight:950;
+  letter-spacing:4px;
+  text-shadow:0 0 32px rgba(0,255,135,.68);
+}
+
+.hero-subtitle{
+  position:relative;
+  z-index:1;
+  max-width:780px;
+  margin-top:14px;
+  font-size:18px;
+  color:var(--muted);
+  line-height:1.6;
+}
+
+.team{
+  position:relative;
+  z-index:1;
+  display:flex;
+  gap:11px;
+  flex-wrap:wrap;
+  margin-top:24px;
+}
+
+.team span{
+  padding:10px 14px;
+  border-radius:16px;
+  background:rgba(255,255,255,.09);
+  border:1px solid rgba(255,255,255,.15);
+  color:rgba(255,255,255,.86);
+  font-weight:700;
+  font-size:14px;
+}
+
+.hero-side{
+  border-radius:34px;
+  padding:28px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+  min-height:270px;
+}
+
+.side-icon{
+  font-size:76px;
+  filter:drop-shadow(0 0 20px rgba(0,255,135,.72));
+}
+
+.side-title{
+  font-size:26px;
+  font-weight:950;
+  margin-top:12px;
+}
+
+.side-text{
+  margin-top:8px;
+  color:var(--muted);
+  line-height:1.55;
+}
+
+.connection-pill{
+  margin-top:20px;
+  padding:13px 15px;
+  border-radius:18px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.14);
+  font-weight:900;
+}
+
+/* SUMMARY */
+.summary-grid{
+  display:grid;
+  grid-template-columns:repeat(6,1fr);
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.summary-card{
+  border-radius:24px;
+  padding:18px;
+}
+
+.summary-label{
+  color:var(--muted);
+  font-size:13px;
+  font-weight:700;
+}
+
+.summary-value{
+  margin-top:7px;
+  font-size:34px;
+  font-weight:950;
+  letter-spacing:1px;
+  transition:.3s;
+}
+
+.summary-note{
+  margin-top:4px;
+  color:rgba(255,255,255,.52);
+  font-size:12px;
+}
+
+/* CARDS */
+.dashboard{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:22px;
+}
+
+.card{
+  position:relative;
+  overflow:hidden;
+  border-radius:30px;
+  padding:26px;
+  min-height:345px;
+  transition:.3s ease;
+}
+
+.card:hover{
+  transform:translateY(-8px);
+  box-shadow:0 32px 75px rgba(0,0,0,.52);
+}
+
+.card::before{
+  content:"";
+  position:absolute;
+  width:160px;
+  height:160px;
+  top:-55px;
+  right:-55px;
+  border-radius:50%;
+  background:rgba(255,255,255,.12);
+}
+
+.card-top{
+  position:relative;
+  z-index:2;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:12px;
+}
+
+.icon{
+  width:76px;
+  height:76px;
+  border-radius:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:42px;
+  background:rgba(255,255,255,.11);
+  border:1px solid rgba(255,255,255,.15);
+}
+
+.sensor-chip{
+  padding:7px 10px;
+  border-radius:999px;
+  background:rgba(255,255,255,.1);
+  color:rgba(255,255,255,.7);
+  border:1px solid rgba(255,255,255,.12);
+  font-size:12px;
+  font-weight:800;
+}
+
+.title{
+  position:relative;
+  z-index:2;
+  margin-top:18px;
+  font-size:18px;
+  color:rgba(255,255,255,.76);
+}
+
+.value{
+  position:relative;
+  z-index:2;
+  margin-top:6px;
+  font-size:47px;
+  font-weight:950;
+  letter-spacing:.5px;
+}
+
+.unit{
+  font-size:21px;
+  color:rgba(255,255,255,.68);
+}
+
+.progress{
+  position:relative;
+  z-index:2;
+  margin-top:20px;
+  height:13px;
+  width:100%;
+  border-radius:50px;
+  overflow:hidden;
+  background:rgba(255,255,255,.13);
+  box-shadow:inset 0 0 10px rgba(0,0,0,.25);
+}
+
+.bar{
+  height:100%;
+  width:0%;
+  border-radius:50px;
+  background:linear-gradient(90deg,var(--green),var(--cyan));
+  box-shadow:0 0 16px rgba(0,255,135,.56);
+  transition:.55s ease;
+}
+
+.desc{
+  position:relative;
+  z-index:2;
+  display:inline-block;
+  margin-top:16px;
+  padding:9px 12px;
+  border-radius:14px;
+  background:rgba(255,255,255,.1);
+  border:1px solid rgba(255,255,255,.14);
+  font-size:14px;
+  font-weight:900;
+}
+
+.range{
+  position:relative;
+  z-index:2;
+  margin-top:14px;
+  padding:13px;
+  border-radius:18px;
+  background:rgba(0,0,0,.17);
+  border:1px solid rgba(255,255,255,.12);
+  color:rgba(255,255,255,.74);
+  font-size:13px;
+  line-height:1.7;
+}
+
+
+.chart-card{
+  cursor:pointer;
+}
+
+.chart-card:hover .sensor-chip{
+  color:white;
+  border-color:rgba(0,255,135,.55);
+  background:rgba(0,255,135,.15);
+}
+
+.chart-modal-overlay{
+  position:fixed;
+  inset:0;
+  z-index:999;
+  display:none;
+  align-items:center;
+  justify-content:center;
+  padding:18px;
+  background:rgba(0,0,0,.64);
+  backdrop-filter:blur(12px);
+}
+
+.chart-modal-overlay.show{
+  display:flex;
+}
+
+.chart-modal{
+  width:min(860px,100%);
+  max-height:90vh;
+  overflow:hidden;
+  border-radius:30px;
+  background:linear-gradient(145deg,rgba(10,45,35,.97),rgba(4,22,27,.97));
+  border:1px solid rgba(255,255,255,.2);
+  box-shadow:0 30px 90px rgba(0,0,0,.62);
+}
+
+.chart-modal-head{
+  padding:22px;
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:16px;
+  border-bottom:1px solid rgba(255,255,255,.12);
+}
+
+.chart-modal-head h2{
+  font-size:26px;
+  margin-bottom:6px;
+}
+
+.chart-modal-head p{
+  color:rgba(255,255,255,.68);
+  font-size:14px;
+  line-height:1.5;
+}
+
+.chart-close{
+  border:none;
+  width:42px;
+  height:42px;
+  border-radius:14px;
+  background:rgba(255,255,255,.12);
+  color:white;
+  font-size:24px;
+  cursor:pointer;
+}
+
+.chart-body{
+  padding:20px 22px;
+}
+
+.chart-wrap{
+  width:100%;
+  height:360px;
+  border-radius:22px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.12);
+  padding:14px;
+}
+
+#sensorChart{
+  width:100%;
+  height:100%;
+  display:block;
+}
+
+.chart-stats{
+  margin-top:14px;
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:10px;
+}
+
+.chart-stat{
+  padding:12px;
+  border-radius:16px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.11);
+}
+
+.chart-stat small{
+  display:block;
+  color:rgba(255,255,255,.62);
+  margin-bottom:4px;
+}
+
+.chart-stat b{
+  font-size:18px;
+}
+
+.chart-actions{
+  padding:18px 22px 22px;
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  border-top:1px solid rgba(255,255,255,.12);
+}
+
+.btn-clear-chart{
+  background:linear-gradient(135deg,#ff1744,#d50000);
+}
+
+.btn-ghost{
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.18);
+}
+
+@media(max-width:620px){
+  .chart-modal-head{
+    padding:18px;
+  }
+
+  .chart-modal-head h2{
+    font-size:21px;
+  }
+
+  .chart-body{
+    padding:16px;
+  }
+
+  .chart-wrap{
+    height:300px;
+    padding:10px;
+  }
+
+  .chart-stats{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .chart-actions{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+}
+
+/* CONTROLS */
+.control-box{
+  margin-top:24px;
+  border-radius:30px;
+  padding:28px;
+}
+
+.control-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  margin-bottom:22px;
+}
+
+.control-head h2{
+  font-size:30px;
+  font-weight:950;
+  text-shadow:0 0 18px rgba(0,255,135,.58);
+}
+
+.control-head span{
+  color:var(--muted);
+  font-weight:700;
+}
+
+.control-grid{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:18px;
+}
+
+.control-panel{
+  border-radius:24px;
+  padding:22px;
+  background:rgba(0,0,0,.17);
+  border:1px solid rgba(255,255,255,.13);
+}
+
+.control-panel h3{
+  font-size:21px;
+  margin-bottom:8px;
+}
+
+.control-panel p{
+  color:var(--muted);
+  font-size:14px;
+  margin-bottom:16px;
+}
+
+.btn-row{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+}
+
+.btn{
+  border:none;
+  padding:14px 24px;
+  border-radius:16px;
+  color:white;
+  font-size:16px;
+  font-weight:950;
+  cursor:pointer;
+  transition:.25s ease;
+}
+
+.btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 28px rgba(0,0,0,.34);
+}
+
+.btn-on{background:linear-gradient(135deg,#00c853,#64dd17);}
+.btn-off{background:linear-gradient(135deg,#ff1744,#d50000);}
+.btn-auto{background:linear-gradient(135deg,#00b0ff,#2979ff);}
+.btn-auto-off{background:linear-gradient(135deg,#ff9100,#ff6d00);}
+
+.pump-status{
+  margin-top:16px;
+  font-size:18px;
+  font-weight:950;
+  line-height:1.5;
+}
+
+.status-box{
+  margin-top:24px;
+  border-radius:24px;
+  padding:20px;
+  text-align:center;
+  font-size:17px;
+}
+
+.online{color:var(--green);font-weight:950;}
+.offline{color:var(--red);font-weight:950;}
+
+.footer{
+  text-align:center;
+  margin-top:24px;
+  color:rgba(255,255,255,.72);
+  font-size:15px;
+}
+
+
+/* ===== PREMIUM CONTROL UI ===== */
+.control-box{
+  position:relative;
+  overflow:hidden;
+}
+
+.control-box::before{
+  content:"";
+  position:absolute;
+  width:360px;
+  height:360px;
+  right:-140px;
+  top:-160px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(96,239,255,.18),transparent 68%);
+  pointer-events:none;
+}
+
+.control-box::after{
+  content:"";
+  position:absolute;
+  width:280px;
+  height:280px;
+  left:-120px;
+  bottom:-160px;
+  border-radius:50%;
+  background:radial-gradient(circle,rgba(0,255,135,.16),transparent 70%);
+  pointer-events:none;
+}
+
+.control-head{
+  position:relative;
+  z-index:2;
+}
+
+.control-grid{
+  position:relative;
+  z-index:2;
+}
+
+.control-panel{
+  position:relative;
+  overflow:hidden;
+  min-height:235px;
+  background:
+    linear-gradient(145deg,rgba(255,255,255,.135),rgba(255,255,255,.045)),
+    radial-gradient(circle at 85% 10%,rgba(255,255,255,.12),transparent 34%);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.16),
+    0 18px 40px rgba(0,0,0,.28);
+  transition:.3s ease;
+}
+
+.control-panel:hover{
+  transform:translateY(-6px);
+  border-color:rgba(0,255,135,.32);
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.18),
+    0 26px 58px rgba(0,0,0,.42),
+    0 0 0 1px rgba(0,255,135,.08);
+}
+
+.control-panel::before{
+  content:"";
+  position:absolute;
+  width:110px;
+  height:110px;
+  right:-35px;
+  top:-35px;
+  border-radius:50%;
+  background:rgba(255,255,255,.09);
+}
+
+.control-panel h3{
+  position:relative;
+  z-index:2;
+  font-size:22px;
+  letter-spacing:.2px;
+}
+
+.control-panel p{
+  position:relative;
+  z-index:2;
+  min-height:38px;
+}
+
+.btn-row{
+  position:relative;
+  z-index:2;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.btn{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  min-height:52px;
+  padding:14px 16px;
+  border-radius:18px;
+  border:1px solid rgba(255,255,255,.18);
+  letter-spacing:.2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255,255,255,.28),
+    0 14px 30px rgba(0,0,0,.28);
+}
+
+.btn::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,.30),transparent);
+  transform:translateX(-120%);
+  transition:.55s ease;
+  z-index:-1;
+}
+
+.btn:hover::before{
+  transform:translateX(120%);
+}
+
+.btn:active{
+  transform:scale(.97);
+}
+
+.btn-on{
+  background:
+    radial-gradient(circle at 30% 15%,rgba(255,255,255,.28),transparent 34%),
+    linear-gradient(135deg,#00e676,#00b248);
+  color:#eafff4;
+}
+
+.btn-off{
+  background:
+    radial-gradient(circle at 30% 15%,rgba(255,255,255,.25),transparent 34%),
+    linear-gradient(135deg,#ff4d6d,#c9184a);
+  color:#fff1f4;
+}
+
+.btn-auto{
+  background:
+    radial-gradient(circle at 30% 15%,rgba(255,255,255,.28),transparent 34%),
+    linear-gradient(135deg,#00c2ff,#2364ff);
+  color:#eff8ff;
+}
+
+.btn-auto-off{
+  background:
+    radial-gradient(circle at 30% 15%,rgba(255,255,255,.28),transparent 34%),
+    linear-gradient(135deg,#ffbe0b,#fb5607);
+  color:#fff8e8;
+}
+
+.pump-status{
+  position:relative;
+  z-index:2;
+  margin-top:18px;
+  padding:12px 14px;
+  border-radius:16px;
+  background:rgba(0,0,0,.22);
+  border:1px solid rgba(255,255,255,.12);
+  font-size:16px;
+  text-align:center;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08);
+}
+
+.control-panel:nth-child(1) .pump-status{
+  color:#9dffd2;
+}
+
+.control-panel:nth-child(2) .pump-status{
+  color:#ffe082;
+}
+
+.control-panel:nth-child(3) .pump-status{
+  color:#90caf9;
+}
+
+.control-panel:nth-child(4) .pump-status{
+  color:#b2ff59;
+}
+
+.summary-card{
+  position:relative;
+  overflow:hidden;
+  transition:.28s ease;
+}
+
+.summary-card:hover{
+  transform:translateY(-4px);
+  border-color:rgba(0,255,135,.26);
+}
+
+.summary-card::after{
+  content:"";
+  position:absolute;
+  width:80px;
+  height:80px;
+  right:-30px;
+  top:-30px;
+  border-radius:50%;
+  background:rgba(255,255,255,.08);
+}
+
+@media(max-width:1050px){
+  .control-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+}
+
+@media(max-width:620px){
+  .control-grid{
+    grid-template-columns:1fr;
+  }
+
+  .control-panel{
+    min-height:auto;
+  }
+
+  .btn-row{
+    grid-template-columns:1fr;
+  }
+}
+
+/* TABLET */
+@media(max-width:1050px){
+  .hero{
+    grid-template-columns:1fr;
+  }
+
+  .summary-grid{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .dashboard{
+    grid-template-columns:repeat(2,1fr);
+  }
+
+  .control-grid{
+    grid-template-columns:1fr;
+  }
+}
+
+/* PHONE */
+@media(max-width:620px){
+  body{
+    padding:14px;
+  }
+
+  .hero-main,
+  .hero-side,
+  .card,
+  .control-box{
+    border-radius:24px;
+    padding:22px;
+  }
+
+  .hero-title{
+    font-size:46px;
+  }
+
+  .hero-subtitle{
+    font-size:15px;
+  }
+
+  .team span{
+    width:100%;
+  }
+
+  .summary-grid{
+    grid-template-columns:1fr;
+  }
+
+  .dashboard{
+    grid-template-columns:1fr;
+  }
+
+  .card{
+    min-height:305px;
+  }
+
+  .value{
+    font-size:40px;
+  }
+
+  .control-head{
+    display:block;
+  }
+
+  .control-head h2{
+    font-size:25px;
+    margin-bottom:8px;
+  }
+
+  .btn-row{
+    display:grid;
+    grid-template-columns:1fr;
+  }
+
+  .btn{
+    width:100%;
+  }
+
+  .footer{
+    font-size:13px;
+  }
+}
+
+/* ===== SUMMARY STATE COLORS ===== */
+.summary-card{
+  border-color:rgba(255,255,255,.18);
+}
+
+.summary-card.state-online{
+  background:
+    linear-gradient(145deg,rgba(0,255,135,.20),rgba(0,255,135,.055)),
+    rgba(255,255,255,.07);
+  border-color:rgba(0,255,135,.46);
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    0 0 24px rgba(0,255,135,.14);
+}
+
+.summary-card.state-on{
+  background:
+    linear-gradient(145deg,rgba(0,255,135,.18),rgba(0,255,135,.045)),
+    rgba(255,255,255,.07);
+  border-color:rgba(0,255,135,.42);
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    0 0 22px rgba(0,255,135,.13);
+}
+
+.summary-card.state-off{
+  background:
+    linear-gradient(145deg,rgba(255,77,109,.18),rgba(255,77,109,.045)),
+    rgba(255,255,255,.07);
+  border-color:rgba(255,77,109,.42);
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    0 0 22px rgba(255,77,109,.13);
+}
+
+.summary-card.state-warning{
+  background:
+    linear-gradient(145deg,rgba(255,214,10,.20),rgba(255,214,10,.055)),
+    rgba(255,255,255,.07);
+  border-color:rgba(255,214,10,.48);
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    0 0 22px rgba(255,214,10,.16);
+}
+
+.summary-card.state-offline{
+  background:
+    linear-gradient(145deg,rgba(255,77,109,.22),rgba(255,77,109,.055)),
+    rgba(255,255,255,.07);
+  border-color:rgba(255,77,109,.52);
+  box-shadow:
+    0 20px 55px rgba(0,0,0,.38),
+    0 0 28px rgba(255,77,109,.18);
+}
+
+.summary-value.state-green{
+  color:#00ff87;
+  text-shadow:0 0 18px rgba(0,255,135,.9);
+}
+
+.summary-value.state-red{
+  color:#ff4d6d;
+  text-shadow:0 0 18px rgba(255,77,109,.88);
+}
+
+.summary-value.state-yellow{
+  color:#ffd60a;
+  text-shadow:0 0 18px rgba(255,214,10,.9);
+}
+
+.summary-value.state-cyan{
+  color:#60efff;
+  text-shadow:0 0 18px rgba(96,239,255,.9);
+}
+
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+  <section class="hero">
+    <div class="hero-main glass">
+      <div class="badge">🌿 SMART FARM SYSTEM</div>
+      <h1 class="hero-title">HHP</h1>
+      <p class="hero-subtitle">
+        Dashboard giám sát và điều khiển tưới cây thông minh theo thời gian thực.
+      </p>
+
+      <div class="team">
+        <span>👨‍💻 Phan Quốc Huy</span>
+        <span>👨‍💻 Hồng Tiến Phát</span>
+        <span>👨‍💻 Văn Ngọc Hữu</span>
+      </div>
+    </div>
+
+    <div class="hero-side glass">
+      <div>
+        <div class="side-icon">🚜</div>
+        <div class="side-title">Farm Control Center</div>
+        <div class="side-text">
+          Theo dõi nhiệt độ, độ ẩm không khí, cảm biến đất RAW, ánh sáng, máy bơm và chế độ tự động.
+        </div>
+      </div>
+
+      <div class="connection-pill" id="connectionMini">
+        ● Đang kiểm tra thiết bị...
+      </div>
+    </div>
+  </section>
+
+  <section class="summary-grid">
+    <div class="summary-card glass">
+      <div class="summary-label">Trạng thái thiết bị</div>
+      <div class="summary-value" id="sumConnect">--</div>
+      <div class="summary-note">Kết nối API /data</div>
+    </div>
+
+    <div class="summary-card glass">
+      <div class="summary-label">Máy bơm</div>
+      <div class="summary-value" id="sumPump">--</div>
+      <div class="summary-note">Tưới nước</div>
+    </div>
+
+    <div class="summary-card glass">
+      <div class="summary-label">Đèn</div>
+      <div class="summary-value" id="sumLightRelay">--</div>
+      <div class="summary-note">Relay GPIO19</div>
+    </div>
+
+    <div class="summary-card glass">
+      <div class="summary-label">Auto đèn</div>
+      <div class="summary-value" id="sumAutoLight">--</div>
+      <div class="summary-note">Tự bật khi ánh sáng thấp</div>
+    </div>
+
+    <div class="summary-card glass">
+      <div class="summary-label">Chế độ Auto</div>
+      <div class="summary-value" id="sumAuto">--</div>
+      <div class="summary-note">Tự tưới khi đất khô</div>
+    </div>
+
+    <div class="summary-card glass">
+      <div class="summary-label">Lần cập nhật</div>
+      <div class="summary-value" id="sumUpdate">--</div>
+      <div class="summary-note">Refresh mỗi 3 giây</div>
+    </div>
+  </section>
+
+  <section class="dashboard">
+
+    <div class="card glass chart-card" onclick="showChart('temperature')">
+      <div class="card-top">
+        <div class="icon">🌡️</div>
+        <div class="sensor-chip">DHT22</div>
+      </div>
+      <div class="title">Nhiệt độ</div>
+      <div class="value"><span id="temperature">--</span> <span class="unit">°C</span></div>
+      <div class="progress"><div class="bar" id="tempBar"></div></div>
+      <div class="desc" id="tempStatus">Đang chờ dữ liệu...</div>
+      <div class="range">
+        ❄️ Thấp: &lt; 20°C<br>
+        ✅ Tốt: 20 - 35°C<br>
+        🔥 Cao: &gt; 35°C
+      </div>
+    </div>
+
+    <div class="card glass chart-card" onclick="showChart('humidity')">
+      <div class="card-top">
+        <div class="icon">💧</div>
+        <div class="sensor-chip">DHT22</div>
+      </div>
+      <div class="title">Độ ẩm không khí</div>
+      <div class="value"><span id="humidity">--</span> <span class="unit">%</span></div>
+      <div class="progress"><div class="bar" id="humiBar"></div></div>
+      <div class="desc" id="humiStatus">Đang chờ dữ liệu...</div>
+      <div class="range">
+        🏜️ Khô: &lt; 40%<br>
+        ✅ Tốt: 40 - 70%<br>
+        💦 Cao: &gt; 70%
+      </div>
+    </div>
+
+    <div class="card glass chart-card" onclick="showChart('soil')">
+      <div class="card-top">
+        <div class="icon">🌱</div>
+        <div class="sensor-chip">ADC 0-4095</div>
+      </div>
+      <div class="title">Độ ẩm đất (RAW)</div>
+      <div class="value"><span id="soil">--</span></div>
+      <div class="progress"><div class="bar" id="soilBar"></div></div>
+      <div class="desc" id="soilStatus">Đang chờ dữ liệu...</div>
+      <div class="range">
+        💧 Ướt: 0 - 1500<br>
+        🌱 Đủ ẩm: 1500 - 3000<br>
+        🚨 Khô: 3000 - 4095
+      </div>
+    </div>
+
+    <div class="card glass chart-card" onclick="showChart('light')">
+      <div class="card-top">
+        <div class="icon">☀️</div>
+        <div class="sensor-chip">LDR</div>
+      </div>
+      <div class="title">Cường độ ánh sáng</div>
+      <div class="value"><span id="light">--</span> <span class="unit">%</span></div>
+      <div class="progress"><div class="bar" id="lightBar"></div></div>
+      <div class="desc" id="lightStatus">Đang chờ dữ liệu...</div>
+      <div class="range">
+        🌙 Tối: &lt; 30%<br>
+        ⛅ Trung bình: 30 - 70%<br>
+        ☀️ Sáng mạnh: &gt; 70%
+      </div>
+    </div>
+
+  </section>
+
+  <section class="control-box glass">
+    <div class="control-head">
+      <h2>⚡ Trung tâm điều khiển HHP</h2>
+      <span>Smart Farm Control Panel</span>
+    </div>
+
+    <div class="control-grid">
+      <div class="control-panel">
+        <h3>Điều khiển thủ công</h3>
+        <p>Bật hoặc tắt máy bơm trực tiếp</p>
+        <div class="btn-row">
+          <button class="btn btn-on" onclick="pumpOn()">🚿 BẬT TƯỚI</button>
+          <button class="btn btn-off" onclick="pumpOff()">⛔ TẮT TƯỚI</button>
+        </div>
+        <div class="pump-status" id="pumpStatus">Máy bơm: --</div>
+      </div>
+
+      <div class="control-panel">
+        <h3>Điều khiển đèn</h3>
+        <p>Bật hoặc tắt đèn qua relay GPIO19.</p>
+        <div class="btn-row">
+          <button class="btn btn-auto" onclick="lightOn()">💡 BẬT ĐÈN</button>
+          <button class="btn btn-auto-off" onclick="lightOff()">🌑 TẮT ĐÈN</button>
+        </div>
+        <div class="pump-status" id="lightRelayStatus">Đèn: --</div>
+      </div>
+
+      <div class="control-panel">
+        <h3>☀️ Auto ánh sáng</h3>
+        <p>Tự bật đèn khi ánh sáng thấp dưới ngưỡng.</p>
+        <div class="btn-row">
+          <button class="btn btn-auto" onclick="autoLightOn()">☀️ AUTO ON</button>
+          <button class="btn btn-auto-off" onclick="autoLightOff()">🌙 AUTO OFF</button>
+        </div>
+        <div class="pump-status" id="autoLightStatus">Auto đèn: --</div>
+      </div>
+
+      <div class="control-panel">
+        <h3>Chế độ tự động</h3>
+        <p>Thiết bị tự bật bơm khi cảm biến đất RAW vượt ngưỡng khô.</p>
+        <div class="btn-row">
+          <button class="btn btn-auto" onclick="autoOn()">🤖 AUTO ON</button>
+          <button class="btn btn-auto-off" onclick="autoOff()">⛔ AUTO OFF</button>
+        </div>
+        <div class="pump-status" id="autoStatus">Chế độ Auto: --</div>
+      </div>
+    </div>
+  </section>
+  <div class="chart-modal-overlay" id="chartModal">
+    <div class="chart-modal">
+      <div class="chart-modal-head">
+        <div>
+          <h2 id="chartTitle">📈 Biểu đồ </h2>
+          <p>Dữ liệu lịch sử được lưu trên Firebase. Mở lại web vẫn xem được biểu đồ trong 60 phút gần nhất.</p>
+        </div>
+        <button class="chart-close" onclick="closeChart()">×</button>
+      </div>
+
+      <div class="chart-body">
+        <div class="chart-wrap">
+          <canvas id="sensorChart"></canvas>
+        </div>
+
+        <div class="chart-stats">
+          <div class="chart-stat">
+            <small>Hiện tại</small>
+            <b id="chartNow">--</b>
+          </div>
+          <div class="chart-stat">
+            <small>Thấp nhất</small>
+            <b id="chartMin">--</b>
+          </div>
+          <div class="chart-stat">
+            <small>Cao nhất</small>
+            <b id="chartMax">--</b>
+          </div>
+          <div class="chart-stat">
+            <small>Số điểm</small>
+            <b id="chartCount">--</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="chart-actions">
+        <button class="btn btn-clear-chart" onclick="clearChartData()">XÓA LỊCH SỬ FIREBASE</button>
+        <button class="btn btn-ghost" onclick="closeChart()">ĐÓNG</button>
+      </div>
+    </div>
+  </div>
+
+
+
+  <div class="status-box glass" id="status">
+    ⏳ Đang lấy dữ liệu từ Thiết bị...
+  </div>
+
+  <div class="footer">
+    HHP Smart Farm Dashboard | Phan Quốc Huy - Hồng Tiến Phát - Văn Ngọc Hữu
+  </div>
+
+</div>
+
+<script>
+const ESP32_IP = "http://10.247.209.215";
+const FIREBASE_URL = "https://phan-huy-default-rtdb.asia-southeast1.firebasedatabase.app";
+let firebaseChartData = [];
+
+function setBar(id, value, max){
+  let percent = Math.min((value / max) * 100, 100);
+  percent = Math.max(percent, 0);
+  document.getElementById(id).style.width = percent + "%";
+}
+
+function setText(id, text){
+  const el = document.getElementById(id);
+  if(el) el.innerHTML = text;
+}
+
+
+function setSummaryState(valueId, cardState, valueState){
+  const valueEl = document.getElementById(valueId);
+  if(!valueEl) return;
+
+  const card = valueEl.closest(".summary-card");
+  if(card){
+    card.classList.remove("state-online","state-on","state-off","state-warning","state-offline");
+    if(cardState) card.classList.add(cardState);
+  }
+
+  valueEl.classList.remove("state-green","state-red","state-yellow","state-cyan");
+  if(valueState) valueEl.classList.add(valueState);
+}
+
+function nowText(){
+  const d = new Date();
+  return d.toLocaleTimeString("vi-VN", {
+    hour:"2-digit",
+    minute:"2-digit",
+    second:"2-digit"
+  });
+}
+
+
+const CHART_KEY = "HHP_SENSOR_CHART_1H";
+const CHART_WINDOW_MS = 60 * 60 * 1000;
+let activeChartType = "temperature";
+
+const chartMeta = {
+  temperature:{ label:"🌡️ Biểu đồ nhiệt độ", unit:"°C", key:"temperature", minY:null, maxY:null },
+  humidity:{ label:"💧 Biểu đồ độ ẩm không khí", unit:"%", key:"humidity", minY:0, maxY:100 },
+  soil:{ label:"🌱 Biểu đồ độ ẩm đất RAW", unit:"", key:"soil", minY:0, maxY:4095 },
+  light:{ label:"☀️ Biểu đồ ánh sáng", unit:"%", key:"lightPercent", minY:0, maxY:100 }
+};
+
+function getChartData(){
+  const now = Date.now();
+  return firebaseChartData
+    .filter(item => now - Number(item.timestamp) <= CHART_WINDOW_MS)
+    .sort((a,b) => Number(a.timestamp) - Number(b.timestamp));
+}
+
+async function loadHistoryFromFirebase(){
+  try{
+    const response = await fetch(FIREBASE_URL + "/history.json", {
+      method:"GET",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Không đọc được Firebase");
+
+    const data = await response.json();
+
+    if(!data){
+      firebaseChartData = [];
+      return;
+    }
+
+    firebaseChartData = Object.values(data)
+      .map(item => ({
+        timestamp: Number(item.timestamp),
+        temperature: Number(item.temperature),
+        humidity: Number(item.humidity),
+        soil: Number(item.soil),
+        lightPercent: Number(item.lightPercent)
+      }))
+      .filter(item => !Number.isNaN(item.timestamp))
+      .sort((a,b) => a.timestamp - b.timestamp);
+  }
+  catch(error){
+    console.log("Lỗi đọc lịch sử Firebase:", error);
+  }
+}
+
+async function addChartPoint(data, lightPercent){
+  const now = Date.now();
+
+  const point = {
+    timestamp: now,
+    temperature: Number(data.temperature),
+    humidity: Number(data.humidity),
+    soil: Number(data.soil),
+    lightPercent: Number(lightPercent)
+  };
+
+  firebaseChartData.push(point);
+  firebaseChartData = firebaseChartData.filter(item => now - Number(item.timestamp) <= CHART_WINDOW_MS);
+
+  try{
+    await fetch(FIREBASE_URL + "/history.json", {
+      method:"POST",
+      headers:{
+        "Content-Type":"application/json"
+      },
+      body:JSON.stringify(point)
+    });
+  }
+  catch(error){
+    console.log("Lỗi ghi lịch sử Firebase:", error);
+  }
+
+  if(document.getElementById("chartModal").classList.contains("show")){
+    drawChart(activeChartType);
+  }
+}
+
+function showChart(type){
+  activeChartType = type;
+  document.getElementById("chartModal").classList.add("show");
+  drawChart(type);
+}
+
+function closeChart(){
+  document.getElementById("chartModal").classList.remove("show");
+}
+
+async function clearChartData(){
+  const ok = confirm("Bạn chắc chắn muốn xóa toàn bộ lịch sử cảm biến trên Firebase?");
+  if(!ok) return;
+
+  try{
+    await fetch(FIREBASE_URL + "/history.json", {
+      method:"DELETE"
+    });
+
+    firebaseChartData = [];
+    drawChart(activeChartType);
+  }
+  catch(error){
+    alert("Không xóa được lịch sử trên Firebase.");
+    console.log("Lỗi xóa Firebase:", error);
+  }
+}
+
+function drawChart(type){
+  const meta = chartMeta[type];
+  const canvas = document.getElementById("sensorChart");
+  const ctx = canvas.getContext("2d");
+  const wrap = canvas.parentElement;
+
+  const dpr = window.devicePixelRatio || 1;
+  canvas.width = wrap.clientWidth * dpr;
+  canvas.height = wrap.clientHeight * dpr;
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+
+  const w = wrap.clientWidth;
+  const h = wrap.clientHeight;
+
+  ctx.clearRect(0,0,w,h);
+
+  const now = Date.now();
+  const data = getChartData()
+    .filter(item => now - item.timestamp <= CHART_WINDOW_MS)
+    .sort((a,b) => a.timestamp - b.timestamp);
+
+  setText("chartTitle", meta.label);
+
+  if(data.length < 2){
+    ctx.fillStyle = "rgba(255,255,255,.72)";
+    ctx.font = "15px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.fillText("Chưa đủ dữ liệu để vẽ biểu đồ.", w/2, h/2 - 10);
+    ctx.fillText("Đợi web thu thập ít nhất 2 lần cập nhật.", w/2, h/2 + 18);
+
+    setText("chartNow","--");
+    setText("chartMin","--");
+    setText("chartMax","--");
+    setText("chartCount",data.length);
+    return;
+  }
+
+  const values = data.map(item => Number(item[meta.key]));
+  let minVal = meta.minY !== null ? meta.minY : Math.min(...values);
+  let maxVal = meta.maxY !== null ? meta.maxY : Math.max(...values);
+
+  if(minVal === maxVal){
+    minVal -= 1;
+    maxVal += 1;
+  }
+
+  const pad = {left:48,right:18,top:18,bottom:36};
+  const cw = w - pad.left - pad.right;
+  const ch = h - pad.top - pad.bottom;
+
+  function xScale(ts){
+    return pad.left + ((ts - (now - CHART_WINDOW_MS)) / CHART_WINDOW_MS) * cw;
+  }
+
+  function yScale(v){
+    return pad.top + (1 - ((v - minVal) / (maxVal - minVal))) * ch;
+  }
+
+  // grid
+  ctx.strokeStyle = "rgba(255,255,255,.10)";
+  ctx.lineWidth = 1;
+  ctx.fillStyle = "rgba(255,255,255,.58)";
+  ctx.font = "12px Segoe UI";
+  ctx.textAlign = "right";
+
+  for(let i=0;i<=4;i++){
+    const y = pad.top + (ch/4)*i;
+    ctx.beginPath();
+    ctx.moveTo(pad.left,y);
+    ctx.lineTo(w-pad.right,y);
+    ctx.stroke();
+
+    const val = maxVal - ((maxVal-minVal)/4)*i;
+    ctx.fillText(Math.round(val) + meta.unit, pad.left - 8, y + 4);
+  }
+
+  ctx.textAlign = "center";
+  for(let i=0;i<=4;i++){
+    const x = pad.left + (cw/4)*i;
+    ctx.beginPath();
+    ctx.moveTo(x,pad.top);
+    ctx.lineTo(x,h-pad.bottom);
+    ctx.stroke();
+
+    const t = new Date((now - CHART_WINDOW_MS) + (CHART_WINDOW_MS/4)*i);
+    ctx.fillText(t.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}), x, h - 12);
+  }
+
+  // line
+  const grad = ctx.createLinearGradient(pad.left,0,w-pad.right,0);
+  grad.addColorStop(0,"#00ff87");
+  grad.addColorStop(1,"#60efff");
+
+  ctx.strokeStyle = grad;
+  ctx.lineWidth = 3;
+  ctx.lineJoin = "round";
+  ctx.lineCap = "round";
+  ctx.beginPath();
+
+  data.forEach((item,index)=>{
+    const x = xScale(item.timestamp);
+    const y = yScale(Number(item[meta.key]));
+    if(index === 0) ctx.moveTo(x,y);
+    else ctx.lineTo(x,y);
+  });
+  ctx.stroke();
+
+  // fill area
+  ctx.lineTo(xScale(data[data.length-1].timestamp), h-pad.bottom);
+  ctx.lineTo(xScale(data[0].timestamp), h-pad.bottom);
+  ctx.closePath();
+  const fill = ctx.createLinearGradient(0,pad.top,0,h-pad.bottom);
+  fill.addColorStop(0,"rgba(0,255,135,.20)");
+  fill.addColorStop(1,"rgba(0,255,135,0)");
+  ctx.fillStyle = fill;
+  ctx.fill();
+
+  // current point only
+  const lastPoint = data[data.length - 1];
+  const lastX = xScale(lastPoint.timestamp);
+  const lastY = yScale(Number(lastPoint[meta.key]));
+
+  // glow ring
+  ctx.beginPath();
+  ctx.arc(lastX,lastY,14,0,Math.PI*2);
+  ctx.fillStyle = "rgba(0,255,135,.18)";
+  ctx.fill();
+
+  ctx.beginPath();
+  ctx.arc(lastX,lastY,9,0,Math.PI*2);
+  ctx.fillStyle = "rgba(96,239,255,.22)";
+  ctx.fill();
+
+  // main dot
+  ctx.save();
+  ctx.shadowBlur = 22;
+  ctx.shadowColor = "#00ff87";
+  ctx.beginPath();
+  ctx.arc(lastX,lastY,6,0,Math.PI*2);
+  ctx.fillStyle = "#00ff87";
+  ctx.fill();
+  ctx.restore();
+
+  // white border
+  ctx.beginPath();
+  ctx.arc(lastX,lastY,6,0,Math.PI*2);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "#ffffff";
+  ctx.stroke();
+
+  const latest = values[values.length-1];
+  setText("chartNow", latest + meta.unit);
+  setText("chartMin", Math.min(...values) + meta.unit);
+  setText("chartMax", Math.max(...values) + meta.unit);
+  setText("chartCount", data.length);
+}
+
+window.addEventListener("resize", () => {
+  if(document.getElementById("chartModal").classList.contains("show")){
+    drawChart(activeChartType);
+  }
+});
+
+document.addEventListener("click", function(e){
+  if(e.target.id === "chartModal") closeChart();
+});
+
+async function pumpOn(){
+  try{
+    const response = await fetch(ESP32_IP + "/pump/on", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Pump ON failed");
+
+    setText("pumpStatus","🟢 Máy bơm: ĐANG BẬT");
+    getData();
+  }
+  catch(error){
+    setText("pumpStatus","❌ Không gửi được lệnh bật tưới");
+    console.log(error);
+  }
+}
+
+async function pumpOff(){
+  try{
+    const response = await fetch(ESP32_IP + "/pump/off", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Pump OFF failed");
+
+    setText("pumpStatus","🔴 Máy bơm: ĐANG TẮT");
+    getData();
+  }
+  catch(error){
+    setText("pumpStatus","❌ Không gửi được lệnh tắt tưới");
+    console.log(error);
+  }
+}
+
+async function lightOn(){
+  try{
+    const response = await fetch(ESP32_IP + "/light/on", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Light ON failed");
+
+    setText("lightRelayStatus","🟡 Đèn: ĐANG BẬT");
+    getData();
+  }
+  catch(error){
+    setText("lightRelayStatus","❌ Không gửi được lệnh bật đèn");
+    console.log(error);
+  }
+}
+
+async function lightOff(){
+  try{
+    const response = await fetch(ESP32_IP + "/light/off", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Light OFF failed");
+
+    setText("lightRelayStatus","⚫ Đèn: ĐANG TẮT");
+    getData();
+  }
+  catch(error){
+    setText("lightRelayStatus","❌ Không gửi được lệnh tắt đèn");
+    console.log(error);
+  }
+}
+
+async function autoLightOn(){
+  try{
+    const response = await fetch(ESP32_IP + "/auto-light/on", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Auto light ON failed");
+
+    setText("autoLightStatus","☀️ Auto đèn: ĐANG BẬT");
+    getData();
+  }
+  catch(error){
+    setText("autoLightStatus","❌ Không bật được Auto đèn");
+    console.log(error);
+  }
+}
+
+async function autoLightOff(){
+  try{
+    const response = await fetch(ESP32_IP + "/auto-light/off", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Auto light OFF failed");
+
+    setText("autoLightStatus","⛔ Auto đèn: ĐÃ TẮT");
+    getData();
+  }
+  catch(error){
+    setText("autoLightStatus","❌ Không tắt được Auto đèn");
+    console.log(error);
+  }
+}
+
+async function autoOn(){
+  try{
+    const response = await fetch(ESP32_IP + "/auto/on", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Auto ON failed");
+
+    setText("autoStatus","🤖 Chế độ Auto: ĐANG BẬT");
+    getData();
+  }
+  catch(error){
+    setText("autoStatus","❌ Không bật được Auto");
+    console.log(error);
+  }
+}
+
+async function autoOff(){
+  try{
+    const response = await fetch(ESP32_IP + "/auto/off", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Auto OFF failed");
+
+    setText("autoStatus","⛔ Chế độ Auto: ĐÃ TẮT");
+    getData();
+  }
+  catch(error){
+    setText("autoStatus","❌ Không tắt được Auto");
+    console.log(error);
+  }
+}
+
+async function getData(){
+  try{
+    const response = await fetch(ESP32_IP + "/data", {
+      method:"GET",
+      mode:"cors",
+      cache:"no-store"
+    });
+
+    if(!response.ok) throw new Error("Không đọc được /data");
+
+    const data = await response.json();
+
+    let temp = Number(data.temperature);
+    let humi = Number(data.humidity);
+    let soilRaw = Number(data.soil);
+    let lightRaw = Number(data.light);
+
+    let lightPercent = Math.round(((4095 - lightRaw) / 4095) * 100);
+    lightPercent = Math.max(0, Math.min(lightPercent, 100));
+
+    addChartPoint(data, lightPercent);
+
+    setText("temperature", temp);
+    setText("humidity", humi);
+    setText("soil", soilRaw);
+    setText("light", lightPercent);
+
+    setBar("tempBar", temp, 60);
+    setBar("humiBar", humi, 100);
+    setBar("soilBar", soilRaw, 4095);
+    setBar("lightBar", lightPercent, 100);
+
+    if(temp < 20)
+      setText("tempStatus","❄️ Nhiệt độ thấp");
+    else if(temp <= 35)
+      setText("tempStatus","✅ Nhiệt độ lý tưởng");
+    else
+      setText("tempStatus","🔥 Nhiệt độ cao");
+
+    if(humi < 40)
+      setText("humiStatus","🏜️ Không khí khô");
+    else if(humi <= 70)
+      setText("humiStatus","✅ Độ ẩm phù hợp");
+    else
+      setText("humiStatus","💦 Độ ẩm cao");
+
+    if(soilRaw < 1500)
+      setText("soilStatus","💧 Đất đang ướt");
+    else if(soilRaw <= 3000)
+      setText("soilStatus","🌱 Đất đủ ẩm");
+    else
+      setText("soilStatus","🚨 Đất khô cần tưới");
+
+    if(lightPercent < 30)
+      setText("lightStatus","🌙 Trời tối / thiếu ánh sáng");
+    else if(lightPercent <= 70)
+      setText("lightStatus","⛅ Ánh sáng trung bình");
+    else
+      setText("lightStatus","☀️ Ánh sáng mạnh");
+
+    if(data.pump === true){
+      setText("pumpStatus","🟢 Máy bơm: ĐANG BẬT");
+      setText("sumPump","🟢 ON");
+      setSummaryState("sumPump","state-on","state-green");
+    }else{
+      setText("pumpStatus","🔴 Máy bơm: ĐANG TẮT");
+      setText("sumPump","🔴 OFF");
+      setSummaryState("sumPump","state-off","state-red");
+    }
+
+    if(data.lightRelay === true){
+      setText("lightRelayStatus","🟡 Đèn: ĐANG BẬT");
+      setText("sumLightRelay","🟡 ON");
+      setSummaryState("sumLightRelay","state-warning","state-yellow");
+    }else{
+      setText("lightRelayStatus","⚫ Đèn: ĐANG TẮT");
+      setText("sumLightRelay","🔴 OFF");
+      setSummaryState("sumLightRelay","state-off","state-red");
+    }
+
+    if(data.autoLight === true){
+      setText("autoLightStatus","☀️ Auto đèn: ĐANG BẬT");
+      setText("sumAutoLight","🟢 ON");
+      setSummaryState("sumAutoLight","state-on","state-green");
+    }else{
+      setText("autoLightStatus","⛔ Auto đèn: ĐÃ TẮT");
+      setText("sumAutoLight","🔴 OFF");
+      setSummaryState("sumAutoLight","state-off","state-red");
+    }
+
+    if(data.auto === true){
+      setText("autoStatus","🤖 Chế độ Auto: ĐANG BẬT");
+      setText("sumAuto","🟢 ON");
+      setSummaryState("sumAuto","state-on","state-green");
+    }else{
+      setText("autoStatus","⛔ Chế độ Auto: ĐÃ TẮT");
+      setText("sumAuto","🔴 OFF");
+      setSummaryState("sumAuto","state-off","state-red");
+    }
+
+    setText("sumConnect","ONLINE");
+    setSummaryState("sumConnect","state-online","state-green");
+    setText("sumUpdate",nowText());
+    setSummaryState("sumUpdate","state-online","state-cyan");
+    setText("connectionMini","● Thiết bị ONLINE");
+    setText("status","<span class='online'>● Đã kết nối Thiết bị</span> - Dữ liệu cập nhật realtime");
+  }
+  catch(error){
+    setText("sumConnect","OFFLINE");
+    setSummaryState("sumConnect","state-offline","state-red");
+
+    setText("sumPump","--");
+    setSummaryState("sumPump","state-offline","state-red");
+
+    setText("sumLightRelay","--");
+    setSummaryState("sumLightRelay","state-offline","state-red");
+    setText("lightRelayStatus","Đèn: --");
+
+    setText("sumAutoLight","--");
+    setSummaryState("sumAutoLight","state-offline","state-red");
+    setText("autoLightStatus","Auto đèn: --");
+
+    setText("sumAuto","--");
+    setSummaryState("sumAuto","state-offline","state-red");
+
+    setText("sumUpdate","--");
+    setSummaryState("sumUpdate","state-offline","state-red");
+    setText("connectionMini","● Thiết bị OFFLINE");
+    setText("status","<span class='offline'>● Mất kết nối Thiết bị</span> - Kiểm tra IP hoặc API /data");
+    console.log(error);
+  }
+}
+
+async function startApp(){
+  await loadHistoryFromFirebase();
+  await getData();
+  setInterval(getData,3000);
+}
+
+startApp();
+</script>
+
+</body>
+</html>
