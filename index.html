@@ -492,6 +492,50 @@ body::after{
   border-top:1px solid rgba(255,255,255,.12);
 }
 
+
+.chart-time-control{
+  margin-top:14px;
+  padding:14px;
+  border-radius:18px;
+  background:rgba(0,0,0,.18);
+  border:1px solid rgba(255,255,255,.12);
+}
+
+.chart-time-row{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:12px;
+  margin-bottom:10px;
+  color:rgba(255,255,255,.76);
+  font-size:13px;
+  font-weight:800;
+}
+
+.chart-time-row button{
+  border:none;
+  padding:8px 12px;
+  border-radius:12px;
+  color:white;
+  background:rgba(255,255,255,.12);
+  border:1px solid rgba(255,255,255,.16);
+  font-weight:900;
+  cursor:pointer;
+}
+
+#historySlider{
+  width:100%;
+  accent-color:#00ff87;
+  cursor:pointer;
+}
+
+.chart-time-help{
+  margin-top:8px;
+  color:rgba(255,255,255,.55);
+  font-size:12px;
+  line-height:1.4;
+}
+
 .btn-clear-chart{
   background:linear-gradient(135deg,#ff1744,#d50000);
 }
@@ -1222,6 +1266,15 @@ body::after{
           <canvas id="sensorChart"></canvas>
         </div>
 
+        <div class="chart-time-control">
+          <div class="chart-time-row">
+            <span id="chartRangeLabel">Khoảng hiển thị: --</span>
+            <button type="button" onclick="goLatestChart()">Mới nhất</button>
+          </div>
+          <input id="historySlider" type="range" min="0" max="0" value="0" step="60" oninput="onHistorySliderInput(this.value)">
+          <div class="chart-time-help">Biểu đồ hiển thị 24 giờ/lần. Dashboard vẫn luôn cập nhật cảm biến mới nhất từ Firebase.</div>
+        </div>
+
         <div class="chart-stats">
           <div class="chart-stat">
             <small>Hiện tại</small>
@@ -1303,8 +1356,11 @@ function nowText(){
 
 
 const CHART_KEY = "HHP_SENSOR_CHART_1H";
-const CHART_WINDOW_MS = 60 * 60 * 1000;
+// Đọc toàn bộ Firebase nhưng mỗi lần vẽ chỉ hiển thị 24 giờ.
+const CHART_VIEW_WINDOW_MS = 24 * 60 * 60 * 1000;
 let activeChartType = "temperature";
+let chartWindowStart = null;
+let chartFollowLatest = true;
 
 const chartMeta = {
   temperature:{ label:"🌡️ Biểu đồ nhiệt độ", unit:"°C", key:"temperature", minY:null, maxY:null },
@@ -1314,15 +1370,68 @@ const chartMeta = {
 };
 
 function getChartData(){
-  const now = Date.now();
   return firebaseChartData
-    .filter(item => now - Number(item.timestamp) <= CHART_WINDOW_MS)
+    .filter(item => !Number.isNaN(Number(item.timestamp)))
     .sort((a,b) => Number(a.timestamp) - Number(b.timestamp));
+}
+
+function formatDateTime(ts){
+  const d = new Date(ts);
+  return d.toLocaleDateString("vi-VN", {day:"2-digit", month:"2-digit", year:"numeric"}) + " " +
+    d.toLocaleTimeString("vi-VN", {hour:"2-digit", minute:"2-digit"});
+}
+
+function updateHistorySlider(allData){
+  const slider = document.getElementById("historySlider");
+  const label = document.getElementById("chartRangeLabel");
+  if(!slider || !label) return;
+
+  if(!allData || allData.length === 0){
+    slider.disabled = true;
+    slider.min = 0;
+    slider.max = 0;
+    slider.value = 0;
+    label.innerHTML = "Khoảng hiển thị: --";
+    return;
+  }
+
+  const oldest = Number(allData[0].timestamp);
+  const latest = Number(allData[allData.length - 1].timestamp);
+  const maxStart = Math.max(oldest, latest - CHART_VIEW_WINDOW_MS);
+
+  if(chartFollowLatest || chartWindowStart === null || chartWindowStart > maxStart || chartWindowStart < oldest){
+    chartWindowStart = maxStart;
+  }
+
+  slider.min = Math.floor(oldest / 1000);
+  slider.max = Math.floor(maxStart / 1000);
+  slider.value = Math.floor(chartWindowStart / 1000);
+  slider.disabled = maxStart <= oldest;
+
+  const start = chartWindowStart;
+  const end = Math.min(start + CHART_VIEW_WINDOW_MS, latest);
+  label.innerHTML = "Khoảng hiển thị: " + formatDateTime(start) + " → " + formatDateTime(end);
+}
+
+function onHistorySliderInput(value){
+  chartFollowLatest = false;
+  chartWindowStart = Number(value) * 1000;
+  drawChart(activeChartType);
+}
+
+function goLatestChart(){
+  chartFollowLatest = true;
+  const allData = getChartData();
+  if(allData.length === 0) return;
+  const oldest = Number(allData[0].timestamp);
+  const latest = Number(allData[allData.length - 1].timestamp);
+  chartWindowStart = Math.max(oldest, latest - CHART_VIEW_WINDOW_MS);
+  drawChart(activeChartType);
 }
 
 async function loadHistoryFromFirebase(){
   try{
-    const response = await fetch(FIREBASE_URL + "/history.json", {
+    const response = await fetch(FIREBASE_URL + "/history.json?ts=" + Date.now(), {
       method:"GET",
       cache:"no-store"
     });
@@ -1337,14 +1446,36 @@ async function loadHistoryFromFirebase(){
     }
 
     firebaseChartData = Object.values(data)
-      .map(item => ({
-        timestamp: Number(item.timestamp),
-        temperature: Number(item.temperature),
-        humidity: Number(item.humidity),
-        soil: Number(item.soil),
-        lightPercent: Number(item.lightPercent)
-      }))
-      .filter(item => !Number.isNaN(item.timestamp))
+      .map(raw => {
+        const item = raw.data || raw.sensor || raw.value || raw;
+        let ts = Number(item.timestamp || item.time || item.createdAt || item.created_at || Date.now());
+        if(ts < 10000000000) ts = ts * 1000; // nếu ESP32 gửi giây thì đổi sang mili-giây
+
+        const tempValue = item.temperature ?? item.temp ?? item.nhietdo;
+        const humiValue = item.humidity ?? item.humi ?? item.doam;
+        const soilValue = item.soil ?? item.soilValue ?? item.soilRaw ?? item.doamdat;
+        const lightValue = item.light ?? item.lightValue ?? item.lightRaw;
+
+        let lightPercent = Number(item.lightPercent ?? item.light_percent ?? item.lightPct);
+        if(Number.isNaN(lightPercent) && lightValue !== undefined){
+          lightPercent = Math.round(((4095 - Number(lightValue)) / 4095) * 100);
+        }
+        lightPercent = Math.max(0, Math.min(lightPercent, 100));
+
+        return {
+          timestamp: ts,
+          temperature: Number(tempValue),
+          humidity: Number(humiValue),
+          soil: Number(soilValue),
+          light: Number(lightValue),
+          lightPercent: lightPercent,
+          pump: item.pump === true || item.pump === "true" || item.pump === 1,
+          lightRelay: item.lightRelay === true || item.lightRelay === "true" || item.lightRelay === 1,
+          auto: item.auto === true || item.auto === "true" || item.auto === 1,
+          autoLight: item.autoLight === true || item.autoLight === "true" || item.autoLight === 1
+        };
+      })
+      .filter(item => !Number.isNaN(item.timestamp) && !Number.isNaN(item.temperature) && !Number.isNaN(item.humidity) && !Number.isNaN(item.soil))
       .sort((a,b) => a.timestamp - b.timestamp);
   }
   catch(error){
@@ -1364,7 +1495,7 @@ async function addChartPoint(data, lightPercent){
   };
 
   firebaseChartData.push(point);
-  firebaseChartData = firebaseChartData.filter(item => now - Number(item.timestamp) <= CHART_WINDOW_MS);
+  firebaseChartData = firebaseChartData.sort((a,b) => Number(a.timestamp) - Number(b.timestamp));
 
   try{
     await fetch(FIREBASE_URL + "/history.json", {
@@ -1428,10 +1559,18 @@ function drawChart(type){
 
   ctx.clearRect(0,0,w,h);
 
-  const now = Date.now();
-  const data = getChartData()
-    .filter(item => now - item.timestamp <= CHART_WINDOW_MS)
-    .sort((a,b) => a.timestamp - b.timestamp);
+  const allData = getChartData()
+    .sort((a,b) => Number(a.timestamp) - Number(b.timestamp));
+
+  updateHistorySlider(allData);
+
+  const windowStart = chartWindowStart;
+  const windowEnd = windowStart === null ? null : windowStart + CHART_VIEW_WINDOW_MS;
+  const data = allData.filter(item => {
+    if(windowStart === null || windowEnd === null) return true;
+    const ts = Number(item.timestamp);
+    return ts >= windowStart && ts <= windowEnd;
+  });
 
   setText("chartTitle", meta.label);
 
@@ -1440,7 +1579,7 @@ function drawChart(type){
     ctx.font = "15px Segoe UI";
     ctx.textAlign = "center";
     ctx.fillText("Chưa đủ dữ liệu để vẽ biểu đồ.", w/2, h/2 - 10);
-    ctx.fillText("Đợi web thu thập ít nhất 2 lần cập nhật.", w/2, h/2 + 18);
+    ctx.fillText("Kéo thanh thời gian hoặc đợi Firebase có thêm dữ liệu.", w/2, h/2 + 18);
 
     setText("chartNow","--");
     setText("chartMin","--");
@@ -1462,8 +1601,12 @@ function drawChart(type){
   const cw = w - pad.left - pad.right;
   const ch = h - pad.top - pad.bottom;
 
+  const minTime = data[0].timestamp;
+  const maxTime = data[data.length - 1].timestamp;
+  const timeRange = Math.max(maxTime - minTime, 1);
+
   function xScale(ts){
-    return pad.left + ((ts - (now - CHART_WINDOW_MS)) / CHART_WINDOW_MS) * cw;
+    return pad.left + ((ts - minTime) / timeRange) * cw;
   }
 
   function yScale(v){
@@ -1496,8 +1639,10 @@ function drawChart(type){
     ctx.lineTo(x,h-pad.bottom);
     ctx.stroke();
 
-    const t = new Date((now - CHART_WINDOW_MS) + (CHART_WINDOW_MS/4)*i);
-    ctx.fillText(t.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"}), x, h - 12);
+    const t = new Date(minTime + (timeRange/4)*i);
+    const label = t.toLocaleDateString("vi-VN",{day:"2-digit",month:"2-digit"}) + " " +
+      t.toLocaleTimeString("vi-VN",{hour:"2-digit",minute:"2-digit"});
+    ctx.fillText(label, x, h - 12);
   }
 
   // line
@@ -1566,7 +1711,7 @@ function drawChart(type){
   setText("chartNow", latest + meta.unit);
   setText("chartMin", Math.min(...values) + meta.unit);
   setText("chartMax", Math.max(...values) + meta.unit);
-  setText("chartCount", data.length);
+  setText("chartCount", data.length + " / " + allData.length);
 }
 
 window.addEventListener("resize", () => {
@@ -1733,25 +1878,18 @@ async function autoOff(){
 
 async function getData(){
   try{
-    const response = await fetch(ESP32_IP + "/data", {
-      method:"GET",
-      mode:"cors",
-      cache:"no-store"
-    });
+    await loadHistoryFromFirebase();
 
-    if(!response.ok) throw new Error("Không đọc được /data");
+    if(firebaseChartData.length === 0){
+      throw new Error("Firebase chưa có dữ liệu trong /history");
+    }
 
-    const data = await response.json();
+    const data = firebaseChartData[firebaseChartData.length - 1];
 
     let temp = Number(data.temperature);
     let humi = Number(data.humidity);
     let soilRaw = Number(data.soil);
-    let lightRaw = Number(data.light);
-
-    let lightPercent = Math.round(((4095 - lightRaw) / 4095) * 100);
-    lightPercent = Math.max(0, Math.min(lightPercent, 100));
-
-    addChartPoint(data, lightPercent);
+    let lightPercent = Number(data.lightPercent);
 
     setText("temperature", temp);
     setText("humidity", humi);
@@ -1835,8 +1973,12 @@ async function getData(){
     setSummaryState("sumConnect","state-online","state-green");
     setText("sumUpdate",nowText());
     setSummaryState("sumUpdate","state-online","state-cyan");
-    setText("connectionMini","● Thiết bị ONLINE");
-    setText("status","<span class='online'>● Đã kết nối Thiết bị</span> - Dữ liệu cập nhật realtime");
+    setText("connectionMini","● Firebase ONLINE");
+    setText("status","<span class='online'>● Đã đọc dữ liệu Firebase</span> - Dashboard đang lấy điểm mới nhất từ Firebase");
+
+    if(document.getElementById("chartModal").classList.contains("show")){
+      drawChart(activeChartType);
+    }
   }
   catch(error){
     setText("sumConnect","OFFLINE");
@@ -1858,14 +2000,15 @@ async function getData(){
 
     setText("sumUpdate","--");
     setSummaryState("sumUpdate","state-offline","state-red");
-    setText("connectionMini","● Thiết bị OFFLINE");
-    setText("status","<span class='offline'>● Mất kết nối Thiết bị</span> - Kiểm tra IP hoặc API /data");
+    setText("connectionMini","● Firebase OFFLINE");
+    setText("status","<span class='offline'>● Không đọc được Firebase</span> - Kiểm tra Rules hoặc đường dẫn /history");
     console.log(error);
   }
 }
 
 async function startApp(){
   await loadHistoryFromFirebase();
+  goLatestChart();
   await getData();
   setInterval(getData,3000);
 }
